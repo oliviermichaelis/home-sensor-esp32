@@ -10,6 +10,9 @@ import config
 
 from machine import Pin, I2C
 
+DEBUGGING = False
+LOGGING = True
+
 
 class BadRequestException(Exception):
     pass
@@ -35,9 +38,9 @@ def read_sensor(sensor, station: str) -> str:
     values = {
         "timestamp": get_timestamp(),
         "station": station,
-        "temperature": sensor.temperature,
-        "humidity": sensor.humidity,
-        "pressure": sensor.pressure,
+        "temperature": float(sensor.temperature),
+        "humidity": float(sensor.humidity),
+        "pressure": float(sensor.pressure),
     }
     return ujson.dumps(values)
 
@@ -46,12 +49,14 @@ def transmit_data(json_values: str):
     if not isinstance(json_values, str):
         return
 
-    url = "https://apiserver.lab.oliviermichaelis.dev/measurements/climate"
-    # url = "http://192.168.1.20:8080/measurements/climate"
+    if DEBUGGING:
+        url = "http://192.168.1.20:8080/measurements/climate"
+    else:
+        url = "https://apiserver.lab.oliviermichaelis.dev/measurements/climate"
 
     response = None
     try:
-        response = urequests.post(url=url, json=json_values)
+        response = urequests.post(url=url, data=json_values)
         if response.status_code != 200:
             raise BadRequestException("Error: status code: " + str(response.status_code) + ", expected: 200")
         print("successful request: ", json_values)
@@ -95,7 +100,7 @@ def main():
         # dirty hack to make sure the local clock stays in sync with the ntp server pool.ntp.org.
         # Resync every 10min with the upstream ntp server in order to mitigate time shift.
         # Resetting the time is no problem, since time shift should never be larger than delay of sensor readings.
-        if utime.time() - last_ntp_sync > 60 * 10:
+        if abs(utime.time() - last_ntp_sync) > 60 * 10:
             ntptime.settime()
             last_ntp_sync = utime.time()
             print("Local time has been synced with pool.ntp.org")
@@ -104,4 +109,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        raise
+    except Exception as err:
+        with open("syslog.txt", "a") as f:
+            f.write(str(err))
