@@ -114,5 +114,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         raise
     except Exception as err:
-        with open("syslog.txt", "a") as f:
-            f.write(str(err))
+        if LOGGING:
+            with open("syslog.txt", "a") as f:
+                f.write(str(err))
