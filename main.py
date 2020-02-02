@@ -7,6 +7,7 @@ import ujson
 import bme280
 import urequests
 import config
+import sys
 
 from machine import Pin, I2C
 
@@ -93,7 +94,7 @@ def main():
     last_ntp_sync = utime.time()
 
     # Initialize I2C pins
-    i2c = I2C(scl=Pin(14), sda=Pin(13), freq=10000)
+    i2c = I2C(scl=Pin(22), sda=Pin(21), freq=10000)
     bme = bme280.BME280(i2c=i2c)
 
     while True:
@@ -116,4 +117,5 @@ if __name__ == "__main__":
     except Exception as err:
         if LOGGING:
             with open("syslog.txt", "a") as f:
-                f.write(str(err))
+                f.write(str(utime.localtime()) + str(err) + '\n')
+        sys.exit()
