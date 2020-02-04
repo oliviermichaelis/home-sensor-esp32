@@ -8,6 +8,7 @@ import bme280
 import urequests
 import config
 import sys
+import machine
 
 from machine import Pin, I2C
 
@@ -118,4 +119,6 @@ if __name__ == "__main__":
         if LOGGING:
             with open("syslog.txt", "a") as f:
                 f.write(str(utime.localtime()) + str(err) + '\n')
-        sys.exit()
+        # In case of an unexpected error, reset the controller
+        time.sleep(10)
+        machine.reset()
