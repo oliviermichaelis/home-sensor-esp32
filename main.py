@@ -126,7 +126,7 @@ def main():
             last_ntp_sync = utime.time()
             print("Local time has been synced with pool.ntp.org")
         transmit_data(read_sensor(bme, station))
-        time.sleep(5)
+        time.sleep(60)
 
 
 if __name__ == "__main__":
