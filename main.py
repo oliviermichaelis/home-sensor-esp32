@@ -1,4 +1,3 @@
-import wifimgr
 import network
 import utime
 import ntptime
@@ -7,7 +6,6 @@ import ujson
 import bme280
 import urequests
 import config
-import sys
 import machine
 
 from machine import Pin, I2C
@@ -63,32 +61,53 @@ def transmit_data(json_values: str):
             raise BadRequestException("Error: status code: " + str(response.status_code) + ", expected: 200")
         print("successful request: ", json_values)
         response.close()
-    except ValueError as err:
-        print("Error: ", err)
-    except OSError as err:
-        print("Error: ", err)
-    except NotImplementedError as err:
-        print("Error: ", err)
+    # except ValueError as err:
+    #     print("Error: ", err)
+    # except OSError as err:
+    #     print("Error: ", err)
+    # except NotImplementedError as err:
+    #     print("Error: ", err)
     except BadRequestException as err:
         print(response.text)
         response.close()
         print(err)
+    except Exception as err:
+        print(err)
+        time.sleep(10)
+        machine.reset()
+
+
+def connect_wlan(ssid, password):
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+
+    if wlan.isconnected():
+        print("wlan is already connected to %s" % ssid)
+
+    backoff = 1
+    maximum_backoff = 60
+    while not wlan.isconnected():
+        print("connecting to %s..." % ssid)
+        wlan.connect(ssid, password)
+        if wlan.isconnected():
+            print("successfully connected to %s" % ssid)
+            return wlan
+
+        time.sleep(backoff)
+        if backoff < maximum_backoff:
+            backoff += 1
 
 
 def main():
-    wlan = wifimgr.get_connection()
-    if wlan is None:
-        print("Could not initialize the network connection.")
-        while True:
-            utime.sleep(1)
-            pass
-
+    ssid = config.get_setting("ssid")
+    password = config.get_setting("password")
     station = config.get_setting("station")
 
-    # wlan is a working network.WLAN(STA_IF) instance.
-    # deactivate AP after it has been used to configure the network connection
+    # Turn AP off
     ap = network.WLAN(network.AP_IF)
     ap.active(False)
+
+    connect_wlan(ssid, password)
 
     # set time to UTC time
     ntptime.settime()
@@ -107,7 +126,7 @@ def main():
             last_ntp_sync = utime.time()
             print("Local time has been synced with pool.ntp.org")
         transmit_data(read_sensor(bme, station))
-        time.sleep(60)
+        time.sleep(5)
 
 
 if __name__ == "__main__":

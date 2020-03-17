@@ -18,7 +18,7 @@ def _read_config():
     print(configuration)
 
 
-def get_setting(key : str):
+def get_setting(key: str):
     if not bool(configuration):
         _read_config()
     return configuration.get(key)

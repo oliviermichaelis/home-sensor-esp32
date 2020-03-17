@@ -1,3 +1,5 @@
 {
-  "station": "esp32"
+  "station": "station",
+  "ssid": "ssid",
+  "password": "password"
 }
