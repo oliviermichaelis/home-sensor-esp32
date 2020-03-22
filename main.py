@@ -81,6 +81,10 @@ def connect_wlan(ssid, password):
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
 
+    # Set hostname
+    hostname = "esp-" + config.get_setting("station")
+    wlan.config(dhcp_hostname=hostname)
+
     if wlan.isconnected():
         print("wlan is already connected to %s" % ssid)
 
