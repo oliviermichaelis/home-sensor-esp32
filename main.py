@@ -82,7 +82,7 @@ def connect_wlan(ssid, password):
     wlan.active(True)
 
     # Set hostname
-    hostname = "esp-" + config.get_setting("station")
+    hostname = "esp32-" + config.get_setting("station")
     wlan.config(dhcp_hostname=hostname)
 
     if wlan.isconnected():
