@@ -3,9 +3,9 @@ import utime
 import ntptime
 import time
 import ujson
+import config
 import bme280
 import urequests
-import config
 import machine
 
 from machine import Pin, I2C
